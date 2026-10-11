@@ -1,36 +1,47 @@
 @echo off
-chcp 65001 >nul
 cd /d %~dp0
-echo ============================================
-echo   打包试卷下载器为 exe
-echo ============================================
-where python >nul 2>nul
+title Paper Downloader Builder
+echo ========================================
+echo   Paper Downloader GUI - Build Script
+echo ========================================
+echo.
+
+python --version >nul 2>&1
 if errorlevel 1 (
-    echo [x] 没有检测到 Python, 请先安装:
+    echo [X] Python not found.
+    echo     Please install Python first:
     echo     https://www.python.org/downloads/
-    echo     安装时务必勾选 "Add Python to PATH"
+    echo     IMPORTANT: check "Add python.exe to PATH" on the installer!
     pause
     exit /b 1
 )
-echo [1/3] 安装依赖 (requests / pillow / pyinstaller)...
+
+echo [1/3] Installing dependencies (first run downloads about 40MB)...
 python -m pip install --upgrade pip -q
-python -m pip install -q requests pillow pyinstaller
+python -m pip install requests pillow pyinstaller -q
 if errorlevel 1 (
-    echo [x] 依赖安装失败, 检查网络后重试
+    echo [X] Dependency install failed. Please check your network.
     pause
     exit /b 1
 )
-echo [2/3] 开始打包图形版 (约 1-2 分钟)...
-python -m PyInstaller --onefile --windowed --noconfirm --name 试卷下载器 paper_batch_gui.py
+
+echo [2/3] Building exe... (takes about 3-5 minutes, please wait)
+python -m PyInstaller --onefile --console --noconfirm --name PaperDownloader paper_batch_gui.py
 if errorlevel 1 (
-    echo [x] 打包失败, 把上面的报错截图发给助手
+    echo [X] Build failed. Please screenshot the error and send it to the assistant.
     pause
     exit /b 1
 )
-echo [2.5/3] 打包命令行版 (可选备用)...
-python -m PyInstaller --onefile --console --noconfirm --name paper_batch paper_batch_pc.py
-echo [3/3] 完成!
-echo    exe 位置: dist\试卷下载器.exe  (图形界面, 双击使用)
-echo              dist\paper_batch.exe (命令行版, 备用)
-echo    可以把 exe 复制到任意文件夹双击使用
+
+echo [3/3] Cleaning up...
+rmdir /s /q build 2>nul
+del *.spec 2>nul
+
+python -c "import os; s=r'dist\PaperDownloader.exe'; d='dist/\u8bd5\u5377\u4e0b\u8f7d\u5668.exe'; os.path.exists(d) and os.remove(d); os.rename(s, d); print('renamed to Chinese name OK')"
+
+echo.
+echo [OK] Build finished!
+echo      Output folder: dist
+echo      Double-click the exe inside to run. Token is built in.
+echo.
 pause
