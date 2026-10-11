@@ -7,10 +7,31 @@ import subprocess
 import sys
 import threading
 import time
+
+# 修复 PyInstaller console 模式双击运行时的标准流问题
+if sys.platform == "win32" and getattr(sys, 'frozen', False):
+    try:
+        # 重定向标准流到空设备
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = open(os.devnull, 'w')
+        sys.stdin = open(os.devnull, 'r')
+    except Exception:
+        pass
+
 import tkinter as tk
 from tkinter import ttk
 
 import paper_batch_pc as core
+
+# Windows 下隐藏控制台窗口（双击 exe 不显示黑框）
+if sys.platform == "win32":
+    try:
+        import ctypes
+        whnd = ctypes.windll.kernel32.GetConsoleWindow()
+        if whnd != 0:
+            ctypes.windll.user32.ShowWindow(whnd, 0)  # SW_HIDE
+    except Exception:
+        pass
 
 GRADE_OPTS = [
     ("六年级", "6"), ("七年级", "7"), ("八年级", "8"),
